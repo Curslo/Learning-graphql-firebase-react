@@ -6,7 +6,8 @@ const {GraphQLObjectType,
     GraphQLString,
     GraphQLSchema,
     GraphQLID,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLList
 } = graphql;
 
 //Import lodash to help in database management
@@ -16,7 +17,10 @@ const _ = require('lodash')
 var books = [
     {name: 'Name of the wind', genre: 'Fantacy', id: '1', authorid: '1'},
     {name: 'The final empire', genre: 'Fantacy', id: '2', authorid: '2'},
-    {name: 'The long earth', genre: 'Sci-fi', id: '3', authorid: '3'}
+    {name: 'The long earth', genre: 'Sci-fi', id: '3', authorid: '3'},
+    {name: 'The hero of ages', genre: 'Fantacy', id: '4', authorid: '2'},
+    {name: 'The color of magic', genre: 'Fantacy', id: '5', authorid: '3'},
+    {name: 'The light fantastic', genre: 'Fantacy', id: '6', authorid: '3'}
 ]
 
 var authors = [
@@ -35,8 +39,8 @@ const BookType = new GraphQLObjectType({
         author: {
             type: AuthorType,
             resolve: (parent, args) => {
-                console.log(parent)
-                return _.find(authors, {id: parent.autherid})
+                // console.log(parent)
+                return _.find(authors, {id: parent.authorid})
             }
         }
     })
@@ -49,7 +53,13 @@ const AuthorType = new GraphQLObjectType({
     fields : () => ({
         id: {type: GraphQLID},
         name: {type: GraphQLString},
-        age: {type: GraphQLInt}
+        age: {type: GraphQLInt},
+        books: {
+            type: new GraphQLList(BookType),
+            resolve: (parent, args) => {
+                return _.filter(books, {authorid: parent.id})
+            }
+        }
     })
 
 })
@@ -58,7 +68,7 @@ const AuthorType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
     name: "RootQueryType",
     fields: {
-        //The first RootQueryType used to query for books
+        //The first RootQueryType used to query for a book
         book: {
             type: BookType,
             args: {id: {type: GraphQLID}},
@@ -69,8 +79,8 @@ const RootQuery = new GraphQLObjectType({
                 
             }
         },
-        //The first RootQueryType used to query for auther
-        auther: {
+        //The first RootQueryType used to query for am auther
+        author: {
             type: AuthorType,
             args: {id: {type: GraphQLID}},
             resolve: (parent, args) => {
@@ -78,6 +88,18 @@ const RootQuery = new GraphQLObjectType({
                 // console.log(typeof(args.id))
                 return _.find(authors, {id: args.id});
                 
+            }
+        },
+        books: {
+            type: new GraphQLList(BookType),
+            resolve: (parent, args) => {
+                return books;
+            }
+        },
+        authors: {
+            type: new GraphQLList(AuthorType),
+            resolve: (parent, args) => {
+                return authors;
             }
         }
     }
