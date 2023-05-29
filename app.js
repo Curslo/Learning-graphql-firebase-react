@@ -1,6 +1,8 @@
 //Import express used to setup our server
 const express = require('express');
 
+const cors = require('cors');
+
 const mongoose = require('mongoose');
 
 //Import express-graphql middleware used to make express understand graphql
@@ -11,6 +13,9 @@ const schema = require('./schema/schema');
 
 //Initialize the express app
 const app = express();
+
+//Allow cross-origin request
+app.use(cors)
 
 mongoose.connect('mongodb+srv://richardkisivii:AyUTekgzHvUcQYHG@cluster0.vnughlv.mongodb.net/?retryWrites=true&w=majority')
 mongoose.connection.once('open', () => {

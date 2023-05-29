@@ -7,7 +7,8 @@ const {GraphQLObjectType,
     GraphQLSchema,
     GraphQLID,
     GraphQLInt,
-    GraphQLList
+    GraphQLList,
+    GraphQLNonNull
 } = graphql;
 
 //Import lodash to help in database management
@@ -39,10 +40,11 @@ const BookType = new GraphQLObjectType({
         genre: {type: GraphQLString},
         author: {
             type: AuthorType,
-            // resolve: (parent, args) => {
+            resolve: (parent, args) => {
             //     // console.log(parent)
             //     return _.find(authors, {id: parent.authorid})
-            // }
+                    return author.findById(parent.authorid);
+            }
         }
     })
 
@@ -57,9 +59,10 @@ const AuthorType = new GraphQLObjectType({
         age: {type: GraphQLInt},
         books: {
             type: new GraphQLList(BookType),
-            // resolve: (parent, args) => {
-            //     return _.filter(books, {authorid: parent.id})
-            // }
+            resolve: (parent, args) => {
+                // return _.filter(books, {authorid: parent.id})
+                return book.find({authorid: parent.id})
+            }
         }
     })
 
@@ -73,35 +76,37 @@ const RootQuery = new GraphQLObjectType({
         book: {
             type: BookType,
             args: {id: {type: GraphQLID}},
-            // resolve: (parent, args) => {
-            //     //Code to get data from db/ other source
-            //     // console.log(typeof(args.id))
-            //     return _.find(books, {id: args.id});
+            resolve: (parent, args) => {
+                //Code to get data from db/ other source
+                // console.log(typeof(args.id))
+                // return _.find(books, {id: args.id});
+                return book.findById(args.id)
                 
-            // }
+            }
         },
         //The first RootQueryType used to query for am auther
         author: {
             type: AuthorType,
             args: {id: {type: GraphQLID}},
-            // resolve: (parent, args) => {
-            //     //Code to get data from db/ other source
-            //     // console.log(typeof(args.id))
-            //     return _.find(authors, {id: args.id});
+            resolve: (parent, args) => {
+                //Code to get data from db/ other source
+                // console.log(typeof(args.id))
+                // return _.find(authors, {id: args.id});
+                return author.findById(args.id)
                 
-            // }
+            }
         },
         books: {
             type: new GraphQLList(BookType),
-            // resolve: (parent, args) => {
-            //     return books;
-            // }
+            resolve: (parent, args) => {
+                return book.find({});
+            }
         },
         authors: {
             type: new GraphQLList(AuthorType),
-            // resolve: (parent, args) => {
-            //     return authors;
-            // }
+            resolve: (parent, args) => {
+                return author.find({});
+            }
         }
     }
 })
@@ -112,8 +117,8 @@ const Mutation = new GraphQLObjectType({
         addAuther: {
             type: AuthorType,
             args: {
-                name: {type: GraphQLString},
-                age: {type: GraphQLInt}
+                name: {type: new GraphQLNonNull(GraphQLString)},
+                age: {type: new GraphQLNonNull(GraphQLID)}
             },
             resolve: (parent, args) => {
                 let Author = new author({
@@ -126,9 +131,9 @@ const Mutation = new GraphQLObjectType({
         addBook: {
             type: BookType,
             args: {
-                name: {type: GraphQLString},
-                genre: {type: GraphQLString},
-                authorid: {type: GraphQLID}
+                name: {type: new GraphQLNonNull(GraphQLString)},
+                genre: {type: new GraphQLNonNull(GraphQLString)},
+                authorid: {type: new GraphQLNonNull(GraphQLID)}
             },
             resolve: (parent, args) => {
                 let Book = new book({
